@@ -5,10 +5,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-//cannot use 127.0.0.1
-//because it is loopbackaddress, it doesn't mean any machine
-//you cannot access this ip
-#define SERVERIP "192.168.1.106"
 #define PORT 2323
 
 int main(int argc, char* argv[]) {
@@ -27,7 +23,7 @@ int main(int argc, char* argv[]) {
     servaddr.sin_port = htons(PORT);
     //servaddr.sin_addr.s_addr = inet_addr("192.168.1.106");
     //use pton, the return value will give you more information
-    if (inet_pton(AF_INET,SERVERIP,&(servaddr.sin_addr.s_addr)) <= 0) {
+    if (inet_pton(AF_INET,argv[1],&(servaddr.sin_addr.s_addr)) <= 0) {
         fprintf(stderr,"inet_pton error\n");
         exit(-1);
     }

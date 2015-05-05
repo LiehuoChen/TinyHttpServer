@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include <errno.h>
+#include <malloc.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -12,13 +14,30 @@
 #define BUFSIZE 4096
 #define MAXCON 100
 
+
+void* getMessage(void* ptr) {
+    int fd = *((int*) ptr);
+    //use recv not read
+    char buf[BUFSIZE];
+    int numrecv = 0;
+    if ((numrecv = recv(fd, buf, BUFSIZE, 0)) < 0) {
+        fprintf(stderr, "receive data error. errno is %d\n", errno);
+        exit(-1);
+    } else {
+        buf[numrecv] = '\0';
+        printf("receive: %s\n", buf);
+    }
+}
+
 int main(int argc, char* argv[])
 {
     int sockfd, acceptfd;
     struct sockaddr_in seraddr, cliaddr;
-    char buf[BUFSIZE];
-    int numrecv = 0;
+    //char buf[BUFSIZE];
+    //int numrecv = 0;
     socklen_t size = 0;
+    int pNum = atoi(argv[2]);
+    pthread_t *threads = (pthread_t *)malloc(pNum * sizeof(pthread_t));
 
     //be careful with the parentheses
     if ((sockfd = socket(AF_INET,SOCK_STREAM,0)) < 0) {
@@ -41,6 +60,7 @@ int main(int argc, char* argv[])
         exit(-1);
     }
 
+    int count = 0;
     while (1) {
         size = sizeof(struct sockaddr_in);
         //& can be used to varaiable, not to value
@@ -48,14 +68,9 @@ int main(int argc, char* argv[])
             fprintf(stderr,"accept error. errno is %d\n", errno);
             exit(-1);
         }
-        //use recv not read
-        if ((numrecv = recv(acceptfd, buf, BUFSIZE, 0)) < 0) {
-            fprintf(stderr, "receive data error. errno is %d\n", errno);
-            exit(-1);
-        } else {
-            buf[numrecv] = '\0';
-            printf("receive: %s\n", buf);
-        }
+        pthread_create(&(threads[count%pNum]),NULL,getMessage,(void *)&acceptfd);
+        pthread_join(threads[count%pNum],NULL);
+
         close(acceptfd);
     }
     close(sockfd);
