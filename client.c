@@ -1,3 +1,4 @@
+//client.c
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -6,12 +7,16 @@
 #include <arpa/inet.h>
 
 #define PORT 2323
+#define BUFSIZE 4096
 
 int main(int argc, char* argv[]) {
+    if (argc < 1) {
+        printf("You should execute like ./%s ip\n",argv[0]);
+    }
     int sockfd;
 
     struct sockaddr_in servaddr;
-    char recbuf[4096];
+    char recbuf[BUFSIZE];
     int len;
 
     if ((sockfd = socket(AF_INET,SOCK_STREAM,0)) == -1) {
@@ -37,7 +42,13 @@ int main(int argc, char* argv[]) {
     scanf("%s",recbuf);
     len = strlen(recbuf);
     write(sockfd,recbuf,len);
-
+    int recnum = 0;
+    if (recnum = recv(sockfd,recbuf,BUFSIZE,0) == -1) {
+        fprintf(stderr, "receive error\n");
+        exit(-1);
+    } else {
+        printf("%s\n",recbuf);
+    }
     close(sockfd);
 
     return 0;

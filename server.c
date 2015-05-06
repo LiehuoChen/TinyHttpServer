@@ -1,3 +1,4 @@
+//server.c
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -27,16 +28,29 @@ void* getMessage(void* ptr) {
         buf[numrecv] = '\0';
         printf("receive: %s\n", buf);
     }
+    char *recbuf = (char *)malloc(BUFSIZE * sizeof(char));
+    sprintf(recbuf,"%s has received.\n",buf);
+    if (send(fd,recbuf,strlen(recbuf),0) == -1) {
+        fprintf(stderr, "send to client error. errno is %d\n", errno);
+        exit(-1);
+    } else {
+        printf("send success\n");
+    }
+    free(recbuf);
 }
 
 int main(int argc, char* argv[])
 {
+    if (argc < 1) {
+        printf("You should execute like ./%s 5, 5 is how many threads can create\n", argv[0]);
+        exit(-1);
+    }
     int sockfd, acceptfd;
     struct sockaddr_in seraddr, cliaddr;
     //char buf[BUFSIZE];
     //int numrecv = 0;
     socklen_t size = 0;
-    int pNum = atoi(argv[2]);
+    int pNum = atoi(argv[1]);
     pthread_t *threads = (pthread_t *)malloc(pNum * sizeof(pthread_t));
 
     //be careful with the parentheses
@@ -68,9 +82,10 @@ int main(int argc, char* argv[])
             fprintf(stderr,"accept error. errno is %d\n", errno);
             exit(-1);
         }
+       
         pthread_create(&(threads[count%pNum]),NULL,getMessage,(void *)&acceptfd);
         pthread_join(threads[count%pNum],NULL);
-
+        ++count; 
         close(acceptfd);
     }
     close(sockfd);
