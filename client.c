@@ -11,7 +11,7 @@
 
 int main(int argc, char* argv[]) {
     if (argc < 1) {
-        printf("You should execute like ./%s ip\n",argv[0]);
+        printf("You should execute like ./%s url host\n",argv[0]);
     }
     int sockfd;
 
@@ -38,8 +38,12 @@ int main(int argc, char* argv[]) {
         exit(-1);
     }
 
-    printf("Please input what you want to send to server:\n");
-    scanf("%s",recbuf);
+    //printf("Please input what you want to send to server:\n");
+    //scanf("%s",recbuf);
+
+
+    //build http request
+    sprintf(request, "Get %s HTTP/1.1\r\n Host: %s\r\n \r\n \r\n", argv[1], argv[2]);
     len = strlen(recbuf);
     write(sockfd,recbuf,len);
     int recnum = 0;

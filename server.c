@@ -39,6 +39,11 @@ void* getMessage(void* ptr) {
     free(recbuf);
 }
 
+//need to learn code
+void handle_get(int connfd, const char* page) {
+
+}
+
 int main(int argc, char* argv[])
 {
     if (argc < 1) {
