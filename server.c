@@ -11,7 +11,7 @@
 #include <netinet/in.h>
 
 //the port must be the same in client side and server side
-#define PORT 2323
+#define PORT 8080
 #define BUFSIZE 4096
 #define MAXCON 100
 
@@ -37,11 +37,6 @@ void* getMessage(void* ptr) {
         printf("send success\n");
     }
     free(recbuf);
-}
-
-//need to learn code
-void handle_get(int connfd, const char* page) {
-
 }
 
 int main(int argc, char* argv[])
