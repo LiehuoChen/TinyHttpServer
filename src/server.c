@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <unistd.h>
 
 //the port must be the same in client side and server side
 #define PORT 8080
@@ -18,7 +19,7 @@
 /* HTTP response and header for a successful request.  */
 
 static char* ok_response =
-  "HTTP/1.0 200 OK\n"
+  "HTTP/1.1 200 OK\n"
   "Content-type: text/html\n"
   "\n";
 
@@ -26,7 +27,7 @@ static char* ok_response =
    understand the request.  */
 
 static char* bad_request_response = 
-  "HTTP/1.0 400 Bad Request\n"
+  "HTTP/1.1 400 Bad Request\n"
   "Content-type: text/html\n"
   "\n"
   "<html>\n"
@@ -40,7 +41,7 @@ static char* bad_request_response =
    requested document was not found.  */
 
 static char* not_found_response_template = 
-  "HTTP/1.0 404 Not Found\n"
+  "HTTP/1.1 404 Not Found\n"
   "Content-type: text/html\n"
   "\n"
   "<html>\n"
@@ -54,7 +55,7 @@ static char* not_found_response_template =
    method was not understood.  */
 
 static char* bad_method_response_template = 
-  "HTTP/1.0 501 Method Not Implemented\n"
+  "HTTP/1.1 501 Method Not Implemented\n"
   "Content-type: text/html\n"
   "\n"
   "<html>\n"
@@ -74,17 +75,55 @@ void* getMessage(void* ptr) {
         exit(-1);
     } else {
         buf[numrecv] = '\0';
-        printf("receive: request\n");
+        printf("receive:\n%s\n",buf);
     }
+
+    char* fpaths = strstr(buf," ");
+    char* fpathe = strstr(fpaths+1," ");
+    char* path = (char *)malloc(sizeof(char) * 256);
+    char* fpath = (char *)malloc(sizeof(char) * 256);
+    int n = strlen(fpaths) - strlen(fpathe);
+    memcpy(path,fpaths+1,n);
+    path[n] = '\0';
+    sprintf(fpath,"../html%s",path);
+
+    printf("file path is %s\n",fpath);
+
     char *recbuf = (char *)malloc(BUFSIZE * sizeof(char));
-        
-    if (send(fd,not_found_response_template,strlen(not_found_response_template),0) == -1) {
+    if (access(fpath,F_OK) == 0) {
+        //file found
+        printf("file found\n");
+        char *filecontent = (char *)malloc(sizeof(char) * (BUFSIZE - strlen(ok_response)));
+        //read file
+        FILE* fp = fopen(fpath,"wr");
+        if (fp == NULL) {
+            printf("open file error\n");
+            exit(-1);
+        }
+
+        fseek(fp,0,SEEK_END);
+        int len = ftell(fp);
+        printf("file len is %d\n",len);
+        rewind(fp);
+        fgets(filecontent,len,fp);
+        fclose(fp);
+        printf("file content-----------------------------\n%s\n",filecontent);
+        sprintf(recbuf,"%s%s",ok_response,filecontent);
+        free(filecontent);
+    } else {    
+        strcpy(recbuf,not_found_response_template);
+    }
+
+    if (send(fd,recbuf,strlen(recbuf),0) == -1) {
         fprintf(stderr, "send to client error. errno is %d\n", errno);
         exit(-1);
     } else {
         printf("send success\n");
     }
+
     free(recbuf);
+    free(path);
+    free(fpath);
 }
 
 int main(int argc, char* argv[])
@@ -130,7 +169,6 @@ int main(int argc, char* argv[])
             fprintf(stderr,"accept error. errno is %d\n", errno);
             exit(-1);
         }
-       
         pthread_create(&(threads[count%pNum]),NULL,getMessage,(void *)&acceptfd);
         pthread_join(threads[count%pNum],NULL);
         ++count; 
