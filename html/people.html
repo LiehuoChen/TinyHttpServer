@@ -1,0 +1,33 @@
+<html>
+    <head>
+        <title>Movies by [&people&]</title>
+        <style type="text/css">
+           .tb table{border-right:1px solid gray;border-bottom:1px solid gray}
+            .tb table td{border-left:1px solid gray;border-top:1px solid gray}
+        </style>
+    </head>
+
+    <body>
+    [&logo_and_searchbox&]
+
+           <br />
+           <table width="100%" border="0">
+                    <tr>
+                        <td width="25%"></td>
+                        <td width="50%"><p style="float:left; font-size:x-large; position:relative">Movie(s) by [&people&]</p></td>
+                        <td width="25%"></td>
+                    </tr>
+                </table>
+           <div class="tb">                                
+                <table align="center" style="width:60%" id="tbResult" cellpadding="5" border="0">
+                    [&&result&<tr>
+                        <td align="right" width="5%">&bull;</td>
+                        <td>
+                            <a style="font-size:medium" href="/movie?id=[&id&]">[&title&]</a>
+                        </td>
+                    </tr>
+                    &]
+                </table>
+            </div>
+    </body>
+</html>

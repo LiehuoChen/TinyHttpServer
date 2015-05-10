@@ -36,11 +36,11 @@ char *geneReq(const char* url) {
     hostname[n] = '\0';
     sprintf(ret,"GET %s HTTP/1.1\r\n",path);
     sprintf(ret + strlen(ret),"Host: %s\r\n",hostname);
-    sprintf(ret + strlen(ret),"User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:28.0) Gecko/20100101 Firefox/28.0\
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n\
-Accept-Language: en-US,en;q=0.5\n\
-Accept-Encoding: gzip, deflate\n\
-Connection: keep-alive");
+    sprintf(ret + strlen(ret),"User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:28.0) Gecko/20100101 Firefox/28.0\n"
+                              "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n"
+                              "Accept-Language: en-US,en;q=0.5\n"
+                              "Accept-Encoding: gzip, deflate\n"
+                              "Connection: keep-alive");
     
     return ret;
 }

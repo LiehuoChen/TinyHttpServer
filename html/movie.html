@@ -1,0 +1,133 @@
+<html>
+    <head>
+        <title>Info for '[&movietitle&]'</title>
+        <style type="text/css">
+           #txtRate
+            {
+                width: 31px;
+            }
+            #txtNum
+            {
+                width: 42px;
+            }
+            .tb table{border-right:1px solid gray;border-bottom:1px solid gray}
+            .tb table td{border-left:1px solid gray;border-top:1px solid gray}
+
+        </style>
+    </head>
+
+    <body>
+    [&logo_and_searchbox&]
+
+       <br />
+
+           <table width="100%" border="0">
+                    <tr>
+                        <td width="25%"></td>
+                        <td width="50%"><p style="float:left; font-size:x-large; position:relative">[&movietitle&]</p></td>
+                        <td width="25%"></td>
+                    </tr>
+                </table>
+ 
+            <div id="contentArea" align="center" class="tb">
+                <table id="tbShowDetail" width="60%" border="0" cellpadding="5">
+                    <tr>
+                        <td align="right">&bull;</td>
+                        <td style="width:inherit">
+                            <div>
+                                <label>Rating</label>
+                                <label>[&rating&]</label>
+                                <label>[&votes&]</label>
+                                <!--<input size="30px" style="border:0" id="txtRate" type="text" value="9.0" />
+                                <input id="txtNum" style="border:0" size="200px" type="text" value="1000" />-->
+                                <label>votes</label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">&bull;</td>
+                        <td>
+                            <div>
+                                <label>Actors</label>
+                                <!--<input id="txtActor1" value="asdfasdfsaf" style="border:0" type="button" onclick="ActorClick(id)" />-->
+                                [&&actors&
+                                <a style="font-size:medium" href="/people?type=actor&id=[&id&]">[&name&]</a>&]
+                                <!--<input id="txtActorID1" type="hidden" value="1" />-->
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">&bull;</td>
+                        <td>
+                            <label>Directors</label>
+                            <!--<input id="txtDire1" value="qweqweqweqw" type="button" style="border:0" onclick="DirectorClick(id)" />
+                            <input id="txtDireID1" type="hidden" value="1" />-->
+                                [&&directors&
+                                <a style="font-size:medium" href="/people?type=director&id=[&id&]">[&name&]</a>&]
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">&bull;</td>
+                        <td>
+                            <div>
+                                <label>Genres</label>
+                                <input id="txtGenr" style="border:0" value="[&&genres&[&genre&],&]" type="text" />
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">&bull;</td>
+                        <td>
+                            <div>
+                                <label>Composer</label>
+                                [&&composers&
+                                <a style="font-size:medium" href="/people?type=composer&id=[&composerid&]">[&composername&]</a>&]
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">&bull;</td>
+                        <td>
+                            <div>
+                                <label>Moive length (min)</label>
+                                <input id="txtMovielen" style="border:0" value="[&&lengths&[&length&],&]" type="text" />
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">&bull;</td>
+                        <td>
+                            <div>
+                                <label>Language</label>
+                                <input id="txtLang" style="border:0" value="[&&languages&[&language&],&]" type="text" />
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">&bull;</td>
+                        <td>
+                            <div>
+                                <label>Country</label>
+                                <input id="txtCountry" style="border:0" value="[&&countries&[&country&],&]" type="text" />
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="right">&bull;</td>
+                        <td>
+                            <div>
+                                <label>Similar Movies</label>
+                                <!--<input id="txtActor1" value="asdfasdfsaf" style="border:0" type="button" onclick="ActorClick(id)" />-->
+                                [&&simis&
+                                <a style="font-size:medium" href="/movie?id=[&id&]">[&name&]</a>&]
+                                <!--<input id="txtActorID1" type="hidden" value="1" />-->
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+            </div>
+        </form>
+    </body>
+</html>
