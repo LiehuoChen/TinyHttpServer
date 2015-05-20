@@ -168,7 +168,6 @@ int main(int argc, char* argv[])
         pthread_create(&(threads[count%pNum]),NULL,getMessage,(void *)&acceptfd);
         pthread_join(threads[count%pNum],NULL);
         ++count; 
-        //close(acceptfd);
     }
     close(sockfd);
 
