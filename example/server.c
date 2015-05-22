@@ -2,8 +2,9 @@
 #include <assert.h>
 #include <errno.h>
 #include <netinet/in.h>
-#include <singal.h>
+#include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -16,7 +17,8 @@
 
 static char* ok_response = 
     "HTTP/1.0 200 OK\n"
-    "Content-type: text/html\n\n";
+    "Content-type: text/html\n"
+    "\n";
 
  
 /* HTTP response, header, and body indicating that the we didn't
@@ -73,7 +75,7 @@ static void handle_get (int connection_fd, const char* page) {
     struct server_module* module = NULL;
     //make sure the requested page begins with a slash and does not
     //contain by addition slashes
-    if (*page == '/' && strchr (page + 1. '/') == NULL) {
+    if (*page == '/' && strchr (page + 1, '/') == NULL) {
         char module_file_name[64];
         snprintf(module_file_name, sizeof(module_file_name),
                     "%s.so",page+1);
@@ -84,19 +86,24 @@ static void handle_get (int connection_fd, const char* page) {
         char response[1024];
         snprintf(response, sizeof(response), not_found_response_template,page);
         write(connection_fd, response, strlen(response));
+        if (verbose) 
+            printf("In handle_get and not found module\n");
     } else {
         write(connection_fd, ok_response, strlen (ok_response));
         //invoke the module, which will generate HTML output and send it 
         //to the client file descriptor
         (*module->generate_function)(connection_fd);
         module_close(module);
+        if (verbose)
+            printf("In handle_get and find module\n");
     }
 }
 
 static void handle_connection(int connection_fd) {
     char buffer[256];
     ssize_t bytes_read;
-
+    if (verbose)
+        printf("In handle_connection function\n"); 
     //-1 is to make space for '\0'
     bytes_read = read(connection_fd, buffer, sizeof(buffer)-1);
     if (bytes_read > 0) {
@@ -105,7 +112,7 @@ static void handle_connection(int connection_fd) {
         char protocol[sizeof(buffer)];
 
         buffer[bytes_read] = '\0';
-        sscanf(buffer,"%s %s %s", method, url, method);
+        sscanf(buffer,"%s %s %s", method, url, protocol);
         /* The client may send various header information following the 
             request. For this HTTP implementation, we dont care about it.
             However, we need to read any data the client tries to send.
@@ -127,7 +134,7 @@ static void handle_connection(int connection_fd) {
        } else if (strcmp (method, "GET")) {
            char response[1024];
 
-           snprintf(response, sizeof(resonse), bad_method_template);
+           snprintf(response, sizeof(response), bad_method_response_template);
            write(connection_fd,response,sizeof(response));
        } else {
            //valid request, process it
@@ -141,8 +148,8 @@ static void handle_connection(int connection_fd) {
             system_error("read");
 }
 
-void server_run(struct addr_local_address, uint16_t port) {
-    struct sockaddr_in socket_addresss;
+void server_run(struct in_addr local_address, uint16_t port) {
+    struct sockaddr_in socket_address;
     int rval;
     struct sigaction sigchld_action;
     int server_socket;

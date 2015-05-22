@@ -5,7 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <server.h>
+#include "server.h"
 
 const char* program_name;
 int verbose;
@@ -50,7 +50,7 @@ char* get_self_executable_dir() {
     size_t result_length;
     char* result;
 
-    rval = readlink("/proc/self/exe",link_target, sizeof(link_target));
+    rval = readlink("/proc/self/exe",link_target, sizeof(link_target)-1);
     if (rval == -1)
         abort();
     else
@@ -62,6 +62,7 @@ char* get_self_executable_dir() {
     result_length = last_slash - link_target;
     result = (char*) xmalloc (result_length+1);
     strncpy(result,link_target,result_length);
-
+    result[result_length] = '\0';
+    
     return result;
 }

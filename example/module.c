@@ -10,7 +10,7 @@ char* module_dir;
 struct server_module* module_open(const char* module_name) {
     char* module_path;
     void* handle;
-    void (*module_generate)(int);
+    void (* module_generate)(int);
     struct server_module* module;
 
     module_path = (char*)xmalloc(strlen(module_dir)+strlen(module_name) + 2);
@@ -19,12 +19,14 @@ struct server_module* module_open(const char* module_name) {
     handle = dlopen(module_path, RTLD_NOW);
     free(module_path);
     if (handle == NULL) {
+        printf("dlopen error\n");
         return NULL;
     }
     //resolve the module_generate symbol from the shared library
-    module_generate = (void (*)(int))dlsym(handle, "module_generate");
+    module_generate = (void (*) (int))dlsym(handle, "module_generate");
     //make sure the symbol was found
     if (module_generate == NULL) {
+        printf("dlsym error\n");
         dlclose(handle);
         return NULL;
     }

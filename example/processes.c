@@ -83,7 +83,7 @@ static char* get_program_name (pid_t pid) {
 static int get_rss (pid_t pid) {
     char file_name[64];
     int fd;
-    cahr mem_info[128];
+    char mem_info[128];
     int rval;
     int rss;
 
@@ -209,8 +209,8 @@ void module_generate (int fd) {
 
     closedir(proc_listing);
 
-    vec[vec_length].iov_base = process_info;
-    vec[vec_length].iov_len = strlen(process_info);
+    vec[vec_length].iov_base = page_end;
+    vec[vec_length].iov_len = strlen(page_end);
     ++vec_length;
 
     writev (fd, vec, vec_length);

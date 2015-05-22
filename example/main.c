@@ -56,7 +56,7 @@ int main (int argc, char* const argv[])
     /* Don't print verbose messages.  */
     verbose = 0;
     /* Load modules from the directory containing this executable.  */
-    module_dir = get_self_executable_directory ();
+    module_dir = get_self_executable_dir ();
     assert (module_dir != NULL);
 
     /* Parse options.  */
