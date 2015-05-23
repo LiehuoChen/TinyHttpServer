@@ -1,0 +1,10 @@
+all:t10client t10server
+
+t10client:
+	gcc -o t10client client.c
+
+t10server: main.o server.o
+	gcc -o t10server main.o server.o -I. -lpthread
+
+clean:
+	rm -f *.o t10client t10server
