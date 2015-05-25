@@ -1,6 +1,5 @@
 //server.c
 #include "server.h"
-#include <pthread.h>
 
 //thread func to process receive data from browser
 void* getMessage(void* ptr) {
@@ -58,6 +57,7 @@ void* getMessage(void* ptr) {
     pthread_exit(NULL);
 }
 
+
 void server_run(struct in_addr ip, int port, int pNum) {
     socklen_t size = 0;
     int sockfd, acceptfd;
@@ -97,8 +97,6 @@ void server_run(struct in_addr ip, int port, int pNum) {
             fprintf(stderr,"accept error. errno is %d\n", errno);
             continue;
         }
-        //should use epoll here
-        //......
 
         pthread_create(&(threads[count%pNum]),NULL,getMessage,(void *)&acceptfd);
         pthread_join(threads[count%pNum],NULL);

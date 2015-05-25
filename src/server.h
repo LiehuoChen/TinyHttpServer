@@ -5,9 +5,12 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <malloc.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/epoll.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
@@ -62,5 +65,5 @@ static char* bad_method_response_template =
   " </body>\n"
   "</html>\n";
 
-void server_run(struct in_addr ip, int port, int pNum);
+void server_run(struct in_addr ip, int port, int maxconn);
 #endif

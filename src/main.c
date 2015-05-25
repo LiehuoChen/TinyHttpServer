@@ -8,17 +8,20 @@
 static const struct option long_opts [] = {
     { "address",        1, NULL, 'a'},
     { "port",           1, NULL, 'p'},
-    { "thread",         1, NULL, 't'}
+    { "maxconn",         1, NULL, 'm'}
 };
 
 static const char* const short_opts = "a:p:t";
 
 int main(int argc, char* argv[])
 {
+    if (argc < 7) {
+        printf("You should execute like:\n %s --address xxx --port xxxx --maxconn x\n",argv[0]);
+    }
     int next_opt;
     struct in_addr ip;
     int port=8080;
-    int pNum=1;
+    int maxconn=1;
     ip.s_addr = INADDR_ANY;
     do {
         next_opt = getopt_long (argc, argv, short_opts, long_opts, NULL);
@@ -36,8 +39,8 @@ int main(int argc, char* argv[])
              case 'p':
                 port = atoi(optarg);
                 break;
-             case 't':
-                pNum = atoi(optarg);
+             case 'm':
+                maxconn = atoi(optarg);
                 break;
              case -1:
                 break;
@@ -45,7 +48,7 @@ int main(int argc, char* argv[])
                 abort();
         }
     } while (next_opt != -1);
-
-    server_run(ip, port, pNum);
+    printf("port is %d, maxconn is %d\n",port,maxconn);
+    server_run(ip, port, maxconn);
     return 0;
 }

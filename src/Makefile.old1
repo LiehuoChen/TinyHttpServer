@@ -1,6 +1,7 @@
 CC=gcc
+CFLAG=-I. -lpthread
 OBJCLIENT=client.o
-OBJSERVER=server_epoll.o main.o
+OBJSERVER=server.o main.o
 
 
 all:t10client t10server
