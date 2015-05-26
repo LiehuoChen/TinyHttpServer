@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <malloc.h>
+#include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>

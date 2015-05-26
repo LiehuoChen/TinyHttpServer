@@ -21,52 +21,45 @@ void process_request(int fd) {
     //use recv function not read function
     char buf[BUFSIZE];
     int numrecv = 0;
-    if ((numrecv = recv(fd, buf, BUFSIZE, 0)) > 0) {
-        buf[numrecv] = '\0';
+    do {
+        numrecv = recv(fd, buf, BUFSIZE, 0);
+        if(numrecv > 0) {
+            buf[numrecv] = '\0';
 
-        char* fpaths = strstr(buf," ");
-        char* fpathe = strstr(fpaths+1," ");
-        char* path = (char *)malloc(sizeof(char) * 256);
-        char* fpath = (char *)malloc(sizeof(char) * 256);
-        int n = strlen(fpaths) - strlen(fpathe);
-        memcpy(path,fpaths+1,n-1);
-        sprintf(fpath,"../html%s",path);
+            char* fpaths = strstr(buf," ");
+            char* fpathe = strstr(fpaths+1," ");
+            char* path = (char *)malloc(sizeof(char) * 256);
+            char* fpath = (char *)malloc(sizeof(char) * 256);
+            int n = strlen(fpaths) - strlen(fpathe);
+            memcpy(path,fpaths+1,n-1);
+            sprintf(fpath,"../html%s",path);
 
-        char *recbuf = (char *)malloc(BUFSIZE * sizeof(char));
-        //read file
-        FILE* fp = fopen(fpath,"rb");
-        if (fp != NULL) {
-            char *filecontent = (char *)malloc(sizeof(char) * BUFSIZE);
-            fseek(fp,0,SEEK_END);
-            int len = ftell(fp);
-            //printf("file len is %d\n",len);
-            rewind(fp);
-            //char *temp 
-            while(fgets(filecontent+strlen(filecontent),len,fp));
-            fclose(fp);
-            //printf("file content-----------------------------\n%s\n",filecontent);
-            sprintf(recbuf,"%s%s",ok_response,filecontent);
-            //printf("recbuf is \n%s\n",recbuf);
-            free(filecontent);
-        } else {    
-            strcpy(recbuf,not_found_response_template);
+            char *recbuf = (char *)malloc(BUFSIZE * sizeof(char));
+            //read file
+            FILE* fp = fopen(fpath,"rb");
+            if (fp != NULL) {
+                char *filecontent = (char *)malloc(sizeof(char) * BUFSIZE);
+                fseek(fp,0,SEEK_END);
+                int len = ftell(fp);
+                rewind(fp);
+                while(fgets(filecontent+strlen(filecontent),len,fp));
+                fclose(fp);
+                sprintf(recbuf,"%s%s",ok_response,filecontent);
+                free(filecontent);
+            } else {    
+                strcpy(recbuf,not_found_response_template);
+            }
+            if (send(fd,recbuf,strlen(recbuf),0) == -1) {
+                fprintf(stderr, "send to client error. errno is %d\n", errno);
+                exit(-1);
+            } else {
+                printf("send success\n");
+            }
+            free(recbuf);
+            free(path);
+            free(fpath);
         }
-
-        if (send(fd,recbuf,strlen(recbuf),0) == -1) {
-            fprintf(stderr, "send to client error. errno is %d\n", errno);
-            exit(-1);
-        } else {
-            printf("send success\n");
-        }
-        free(recbuf);
-        free(path);
-        free(fpath);
-    } else if (numrecv == 0) {
-        ;
-    } else {
-        close(fd);
-    }
-    close(fd);
+    } while(errno != EAGAIN);
 }
 
 void server_run(struct in_addr ip, int port, int maxconn) {
@@ -76,7 +69,7 @@ void server_run(struct in_addr ip, int port, int maxconn) {
     struct epoll_event* events;
     struct sockaddr_in server_addr;
 
-    if ((sfd = socket(AF_INET,SOCK_STREAM,0)) < 0) {
+    if ((sfd = socket(PF_INET,SOCK_STREAM,0)) < 0) {
         perror("socket error\n");
         abort();
     }
@@ -85,7 +78,7 @@ void server_run(struct in_addr ip, int port, int maxconn) {
     server_addr.sin_addr = ip;
     server_addr.sin_port = htons(port);
 
-    if (bind(sfd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) < 0) {
+    if ((rval = bind(sfd, &server_addr, sizeof(server_addr))) < 0) {
         perror("bind error\n");
         abort();
     }
@@ -102,7 +95,8 @@ void server_run(struct in_addr ip, int port, int maxconn) {
         perror("epoll create error\n");
         abort();
     }
-    event.data.fd = efd;
+    //set the socketfd to event fd to monitor
+    event.data.fd = sfd;
     event.events = EPOLLIN | EPOLLET;
     if((rval = epoll_ctl(efd,EPOLL_CTL_ADD, sfd, &event)) < 0) {
         perror("epoll_ctl error 1\n");
@@ -116,12 +110,10 @@ void server_run(struct in_addr ip, int port, int maxconn) {
     while (1) {
         int n,i;
         n = epoll_wait(efd, events, maxconn, -1);
-        printf("n is %d\n",n);
         for (i = 0; i < n; ++i) {
             if ((events[i].events & EPOLLERR) ||
                     (events[i].events & EPOLLHUP) ||
                     (!(events[i].events & EPOLLIN))) {
-                printf("in epoll error\n");
                 /* An error has occured on this fd, or the socket is not
                    ready for reading (why were we notified then?) */
                 fprintf (stderr, "epoll error\n");
@@ -130,12 +122,12 @@ void server_run(struct in_addr ip, int port, int maxconn) {
             } else if (sfd == events[i].data.fd) {
                 /* we have a notification on the listening socket, which means
                 one or more incoming connections*/
-                printf("in find a notification\n");
                 while (1) {
                     int acceptfd;
-                    struct sockaddr_in client_addr;
-                    int size = sizeof(struct sockaddr_in);
-                    if ((acceptfd = accept(sfd, (struct sockaddr*)&client_addr, &size)) == -1) {
+                    char hbuf[80], sbuf[80];
+                    struct sockaddr client_addr;
+                    socklen_t size = sizeof(struct sockaddr);
+                    if ((acceptfd = accept(sfd, &client_addr, &size)) == -1) {
                         if ((errno == EAGAIN) || (errno == EWOULDBLOCK))
                             //we have processed all connections
                             break;
@@ -144,16 +136,27 @@ void server_run(struct in_addr ip, int port, int maxconn) {
                             break;
                         }
                     }
+                    rval = getnameinfo (&client_addr, size,
+                            hbuf, sizeof(hbuf),
+                            sbuf, sizeof(sbuf),
+                            NI_NUMERICHOST | NI_NUMERICSERV);
+                    if (rval == 0)
+                    {
+                        printf("Accepted connection on descriptor %d "
+                                "(host=%s, port=%s)\n", acceptfd, hbuf, sbuf);
+                    }
+
                     if ((rval = make_socket_non_block(acceptfd)) < 0)
                         abort();
+
                     event.data.fd = acceptfd;
                     event.events = EPOLLIN | EPOLLET;
+
                     if((rval = epoll_ctl(efd,EPOLL_CTL_ADD, acceptfd, &event)) < 0) {
                         perror("epoll_ctl error 2\n");
                         abort();
                     }
                 }
-                printf("find a notification while loop end\n");
                 continue;
             } else {
                 /* We have data on the fd waiting to be read. Read and
@@ -161,8 +164,8 @@ void server_run(struct in_addr ip, int port, int maxconn) {
                    completely, as we are running in edge-triggered mode
                    and won't get a notification again for the same
                    data. */
-                printf("process data\n");
                 process_request(events[i].data.fd);
+                close(events[i].data.fd);
             }
         }
     }
